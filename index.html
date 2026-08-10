@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>上班搭子 🐱 | Work Bestie</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐱</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="scene">
+    <header class="topbar">
+      <h1 class="logo">🐾 上班搭子</h1>
+      <button id="settingsBtn" class="pixel-btn small" title="设置">⚙️ 设置</button>
+    </header>
+
+    <main class="layout">
+
+      <!-- Cat stage -->
+      <section class="card cat-card">
+        <div class="bubble" id="speechBubble"><span id="speechText">喵～今天也要元气满满哦！</span></div>
+        <canvas id="catCanvas" width="320" height="320"></canvas>
+        <div class="desk">
+          <span class="desk-item cup">☕</span>
+          <span class="desk-item laptop">💻</span>
+          <span class="desk-item plant">🌱</span>
+        </div>
+        <div class="cat-name" id="catNameLabel">团子</div>
+      </section>
+
+      <!-- Stats -->
+      <section class="card stats-card">
+        <h2 class="card-title">📊 今日战绩</h2>
+
+        <div class="stat-block">
+          <div class="stat-label">💰 已赚到</div>
+          <div class="money" id="moneyValue">¥ 0.00</div>
+        </div>
+
+        <div class="stat-block">
+          <div class="stat-label-row">
+            <span class="stat-label">⏰ 今日进度</span>
+            <span class="stat-percent" id="dayPercent">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill day" id="dayFill"></div>
+          </div>
+          <div class="stat-sub" id="dayTimeRange">09:00 - 18:00</div>
+        </div>
+
+        <div class="stat-block">
+          <div class="stat-label-row">
+            <span class="stat-label">📅 本周进度</span>
+            <span class="stat-percent" id="weekPercent">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill week" id="weekFill"></div>
+          </div>
+          <div class="stat-sub" id="weekSub">周一 - 周五</div>
+        </div>
+      </section>
+
+      <!-- Chat -->
+      <section class="card chat-card">
+        <h2 class="card-title">💬 和 <span id="catNameLabel2">团子</span> 聊两句</h2>
+        <div class="chat-log" id="chatLog"></div>
+        <form class="chat-input-row" id="chatForm">
+          <input type="text" id="chatInput" class="pixel-input" placeholder="说点什么…" autocomplete="off" maxlength="300" />
+          <button type="submit" class="pixel-btn">发送</button>
+        </form>
+        <div class="chat-hint" id="chatHint"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal pixel-panel">
+      <div class="modal-header">
+        <h2>⚙️ 设置</h2>
+        <button class="pixel-btn small" id="closeModalBtn">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <fieldset class="settings-group">
+          <legend>🐱 猫咪</legend>
+          <label class="field">
+            <span>猫咪名字</span>
+            <input type="text" id="inputCatName" class="pixel-input" maxlength="12" />
+          </label>
+        </fieldset>
+
+        <fieldset class="settings-group">
+          <legend>💰 薪资与工时</legend>
+          <label class="field">
+            <span>月薪（税前，¥）</span>
+            <input type="number" id="inputSalary" class="pixel-input" min="0" step="100" />
+          </label>
+          <label class="field">
+            <span>上班时间</span>
+            <input type="time" id="inputStart" class="pixel-input" />
+          </label>
+          <label class="field">
+            <span>下班时间</span>
+            <input type="time" id="inputEnd" class="pixel-input" />
+          </label>
+          <label class="field">
+            <span>每周工作天数</span>
+            <select id="inputWorkdays" class="pixel-input">
+              <option value="5">5 天（周一至周五）</option>
+              <option value="6">6 天（周一至周六）</option>
+              <option value="7">7 天（天天上班）</option>
+            </select>
+          </label>
+        </fieldset>
+
+        <fieldset class="settings-group">
+          <legend>🤖 AI 聊天（OpenAI）</legend>
+          <p class="hint-text">留空则使用内置的猫咪语录，不会调用任何接口。Key 只保存在你浏览器本地，不会上传到其他地方。</p>
+          <label class="field">
+            <span>OpenAI API Key</span>
+            <input type="password" id="inputApiKey" class="pixel-input" placeholder="sk-..." autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>模型</span>
+            <select id="inputModel" class="pixel-input">
+              <option value="gpt-4o-mini">gpt-4o-mini（推荐，便宜快）</option>
+              <option value="gpt-4o">gpt-4o</option>
+              <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+            </select>
+          </label>
+          <button type="button" id="clearKeyBtn" class="pixel-btn small danger">清除已保存的 Key</button>
+        </fieldset>
+      </div>
+
+      <div class="modal-footer">
+        <button id="saveSettingsBtn" class="pixel-btn primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/pixelcat.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
