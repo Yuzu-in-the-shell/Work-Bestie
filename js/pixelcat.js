@@ -41,6 +41,8 @@
     const earTwitch = opts.earTwitch || 0; // -1..1, shifts right ear apex
     const tailPhase = opts.tailPhase || 0; // radians
     const bob = opts.bob || 0; // vertical offset applied at raster time
+    const fur = (opts.palette && opts.palette.fur) || COLOR.fur;
+    const furDark = (opts.palette && opts.palette.furDark) || COLOR.furDark;
 
     const grid = new Array(ROWS);
     for (let y = 0; y < ROWS; y++) grid[y] = new Array(COLS).fill(null);
@@ -79,15 +81,15 @@
       const px = 25 + tailWag * tt + Math.sin(tt * Math.PI * 0.9) * 3.5;
       const py = 27 - tt * 15;
       const r = 2.1 - tt * 1.1;
-      fillEllipse(px, py, r, r, COLOR.fur);
+      fillEllipse(px, py, r, r, fur);
     }
 
     // ---- Ears ----
-    fillTriangle(6, 12, 10, 3, 14, 12, COLOR.fur);
-    fillTriangle(18, 12, 22 + earTwitch, 3, 26, 12, COLOR.fur);
+    fillTriangle(6, 12, 10, 3, 14, 12, fur);
+    fillTriangle(18, 12, 22 + earTwitch, 3, 26, 12, fur);
 
     // ---- Head ----
-    fillEllipse(16, 15, 9, 8, COLOR.fur);
+    fillEllipse(16, 15, 9, 8, fur);
 
     // inner ears (after head so they win)
     fillTriangle(8.4, 10.6, 10, 5.4, 11.8, 10.6, COLOR.pink);
@@ -119,13 +121,13 @@
     set(17.5, 20.2, COLOR.ink);
 
     // whisker dots
-    set(6.5, 17, COLOR.furDark);
-    set(6.5, 18.6, COLOR.furDark);
-    set(25.5, 17, COLOR.furDark);
-    set(25.5, 18.6, COLOR.furDark);
+    set(6.5, 17, furDark);
+    set(6.5, 18.6, furDark);
+    set(25.5, 17, furDark);
+    set(25.5, 18.6, furDark);
 
     // ---- Body ----
-    fillEllipse(16, 26.2, 9.6, 5.6, COLOR.fur);
+    fillEllipse(16, 26.2, 9.6, 5.6, fur);
     fillEllipse(16, 27.6, 6.2, 3.8, COLOR.white);
 
     return grid;
@@ -174,11 +176,16 @@
 
       this.startTime = performance.now();
       this.blinking = false;
+      this.palette = null;
       this._scheduleBlink();
       this._raf = requestAnimationFrame(this._tick.bind(this));
 
       canvas.addEventListener("click", () => this.pulse());
       this._clickPulse = 0;
+    }
+
+    setPalette(palette) {
+      this.palette = palette || null;
     }
 
     _scheduleBlink() {
@@ -202,7 +209,7 @@
       const earTwitch = Math.sin(t * 0.7) > 0.85 ? Math.sin(t * 12) * 0.8 : 0;
       const tailPhase = t * 1.3 + (this._clickPulse ? Math.sin(t * 20) * 2 : 0);
 
-      const grid = buildGrid(t, { blink: this.blinking, earTwitch, tailPhase, bob });
+      const grid = buildGrid(t, { blink: this.blinking, earTwitch, tailPhase, bob, palette: this.palette });
       this.ctx.save();
       this.ctx.translate(0, bob);
       rasterize(this.ctx, grid);
@@ -218,6 +225,12 @@
       clearTimeout(this._blinkTimer);
     }
   }
+
+  PixelCat.PALETTES = {
+    orange: { fur: "#f6b26b", furDark: "#e0924a" },
+    gray: { fur: "#b9bec6", furDark: "#9aa1ab" },
+    black: { fur: "#54545c", furDark: "#3c3c44" },
+  };
 
   window.PixelCat = PixelCat;
 })();

@@ -22,13 +22,13 @@
       <!-- Cat stage -->
       <section class="card cat-card">
         <div class="bubble" id="speechBubble"><span id="speechText">喵～今天也要元气满满哦！</span></div>
-        <canvas id="catCanvas" width="320" height="320"></canvas>
-        <div class="desk">
-          <span class="desk-item cup">☕</span>
-          <span class="desk-item laptop">💻</span>
-          <span class="desk-item plant">🌱</span>
+        <div class="cat-stage" id="catStage" title="戳一下试试～">
+          <canvas id="catCanvas" width="320" height="320"></canvas>
+          <img id="customCatImg" alt="自定义猫咪" hidden />
         </div>
         <div class="cat-name" id="catNameLabel">团子</div>
+        <div class="cat-switcher" id="catSwitcher"></div>
+        <input type="file" id="catUploadInput" accept="image/*" hidden />
       </section>
 
       <!-- Stats -->
@@ -37,7 +37,7 @@
 
         <div class="stat-block">
           <div class="stat-label">💰 已赚到</div>
-          <div class="money" id="moneyValue">¥ 0.00</div>
+          <div class="money" id="moneyValue">$ 0.00</div>
         </div>
 
         <div class="stat-block">
@@ -48,7 +48,7 @@
           <div class="progress-track">
             <div class="progress-fill day" id="dayFill"></div>
           </div>
-          <div class="stat-sub" id="dayTimeRange">09:00 - 18:00</div>
+          <div class="stat-sub" id="dayTimeRange">09:00 - 17:00</div>
         </div>
 
         <div class="stat-block">
@@ -97,7 +97,7 @@
         <fieldset class="settings-group">
           <legend>💰 薪资与工时</legend>
           <label class="field">
-            <span>月薪（税前，¥）</span>
+            <span>月薪（税前，$）</span>
             <input type="number" id="inputSalary" class="pixel-input" min="0" step="100" />
           </label>
           <label class="field">

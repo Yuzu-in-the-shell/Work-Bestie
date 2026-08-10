@@ -1,9 +1,9 @@
 /* Earnings + work-time progress calculations. */
 (function () {
   const DEFAULTS = {
-    salary: 10000,
+    salary: 9500,
     start: "09:00",
-    end: "18:00",
+    end: "17:00",
     workDaysPerWeek: 5,
   };
 

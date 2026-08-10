@@ -4,13 +4,23 @@
 
   const DEFAULT_SETTINGS = {
     catName: "团子",
-    salary: 10000,
+    salary: 9500,
     start: "09:00",
-    end: "18:00",
+    end: "17:00",
     workDaysPerWeek: 5,
     apiKey: "",
     model: "gpt-4o-mini",
+    catCharacterId: "orange",
+    customCatImage: "",
   };
+
+  const BUILTIN_CATS = [
+    { id: "orange", name: "橘团子", swatch: "#f6b26b" },
+    { id: "gray", name: "灰灰", swatch: "#b9bec6" },
+    { id: "black", name: "小黑", swatch: "#54545c" },
+  ];
+
+  const MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
 
   function loadSettings() {
     try {
@@ -77,8 +87,93 @@
   const inputApiKey = $("inputApiKey");
   const inputModel = $("inputModel");
 
+  const catStage = $("catStage");
+  const customCatImg = $("customCatImg");
+  const catCanvasEl = $("catCanvas");
+  const catSwitcher = $("catSwitcher");
+  const catUploadInput = $("catUploadInput");
+
   // ---------- Cat ----------
-  const cat = new PixelCat($("catCanvas"));
+  const cat = new PixelCat(catCanvasEl);
+
+  function applyCatCharacter() {
+    const id = state.settings.catCharacterId;
+    if (id === "custom" && state.settings.customCatImage) {
+      catCanvasEl.hidden = true;
+      customCatImg.hidden = false;
+      customCatImg.src = state.settings.customCatImage;
+    } else {
+      const palette = PixelCat.PALETTES[id] || PixelCat.PALETTES.orange;
+      cat.setPalette(palette);
+      catCanvasEl.hidden = false;
+      customCatImg.hidden = true;
+    }
+  }
+
+  function renderCatSwitcher() {
+    catSwitcher.innerHTML = "";
+    for (const c of BUILTIN_CATS) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "cat-swatch" + (state.settings.catCharacterId === c.id ? " active" : "");
+      btn.style.background = c.swatch;
+      btn.title = c.name;
+      btn.addEventListener("click", () => {
+        state.settings.catCharacterId = c.id;
+        saveSettings(state.settings);
+        applyCatCharacter();
+        renderCatSwitcher();
+      });
+      catSwitcher.appendChild(btn);
+    }
+
+    const uploadBtn = document.createElement("button");
+    uploadBtn.type = "button";
+    uploadBtn.className = "cat-swatch upload" + (state.settings.catCharacterId === "custom" ? " active" : "");
+    uploadBtn.title = "上传我喜欢的猫咪图片/表情包";
+    if (state.settings.customCatImage) {
+      const img = document.createElement("img");
+      img.src = state.settings.customCatImage;
+      uploadBtn.appendChild(img);
+      uploadBtn.addEventListener("click", () => {
+        state.settings.catCharacterId = "custom";
+        saveSettings(state.settings);
+        applyCatCharacter();
+        renderCatSwitcher();
+      });
+    } else {
+      uploadBtn.textContent = "📷";
+      uploadBtn.addEventListener("click", () => catUploadInput.click());
+    }
+    catSwitcher.appendChild(uploadBtn);
+  }
+
+  catUploadInput.addEventListener("change", () => {
+    const file = catUploadInput.files && catUploadInput.files[0];
+    catUploadInput.value = "";
+    if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      say("这张图片有点太大啦，换一张小一点的吧～（建议 1.5MB 以内）");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      state.settings.customCatImage = reader.result;
+      state.settings.catCharacterId = "custom";
+      saveSettings(state.settings);
+      applyCatCharacter();
+      renderCatSwitcher();
+      say("新猫咪上线啦！喵～");
+    };
+    reader.readAsDataURL(file);
+  });
+
+  catStage.addEventListener("click", () => {
+    catStage.classList.remove("bounce");
+    void catStage.offsetWidth;
+    catStage.classList.add("bounce");
+  });
+  catStage.addEventListener("animationend", () => catStage.classList.remove("bounce"));
 
   // ---------- Settings UI ----------
   function applySettingsToForm() {
@@ -155,7 +250,7 @@
 
   // ---------- Stats loop ----------
   function formatMoney(v) {
-    return "¥ " + v.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return "$ " + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   let lastMoneyInt = -1;
@@ -244,6 +339,8 @@
 
   // ---------- Init ----------
   applySettingsToView();
+  applyCatCharacter();
+  renderCatSwitcher();
   updateChatHint();
   renderHistory();
   tickStats();
