@@ -10,14 +10,15 @@
     workDaysPerWeek: 5,
     apiKey: "",
     model: "gpt-4o-mini",
-    catCharacterId: "orange",
+    catCharacterId: "loaf",
     customCatImage: "",
   };
 
   const BUILTIN_CATS = [
-    { id: "orange", name: "橘团子", swatch: "#f6b26b" },
-    { id: "gray", name: "灰灰", swatch: "#b9bec6" },
-    { id: "black", name: "小黑", swatch: "#54545c" },
+    { id: "loaf", name: "包子", type: "image", src: "assets/cats/loaf-cat.gif" },
+    { id: "orange", name: "橘团子", type: "pixel", swatch: "#f6b26b" },
+    { id: "gray", name: "灰灰", type: "pixel", swatch: "#b9bec6" },
+    { id: "black", name: "小黑", type: "pixel", swatch: "#54545c" },
   ];
 
   const MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
@@ -96,14 +97,21 @@
   // ---------- Cat ----------
   const cat = new PixelCat(catCanvasEl);
 
+  function findCharacter(id) {
+    if (id === "custom") {
+      return { id: "custom", type: "image", src: state.settings.customCatImage };
+    }
+    return BUILTIN_CATS.find((c) => c.id === id) || BUILTIN_CATS[0];
+  }
+
   function applyCatCharacter() {
-    const id = state.settings.catCharacterId;
-    if (id === "custom" && state.settings.customCatImage) {
+    const char = findCharacter(state.settings.catCharacterId);
+    if (char.type === "image" && char.src) {
       catCanvasEl.hidden = true;
       customCatImg.hidden = false;
-      customCatImg.src = state.settings.customCatImage;
+      customCatImg.src = char.src;
     } else {
-      const palette = PixelCat.PALETTES[id] || PixelCat.PALETTES.orange;
+      const palette = PixelCat.PALETTES[char.id] || PixelCat.PALETTES.orange;
       cat.setPalette(palette);
       catCanvasEl.hidden = false;
       customCatImg.hidden = true;
@@ -116,8 +124,14 @@
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "cat-swatch" + (state.settings.catCharacterId === c.id ? " active" : "");
-      btn.style.background = c.swatch;
       btn.title = c.name;
+      if (c.type === "image") {
+        const img = document.createElement("img");
+        img.src = c.src;
+        btn.appendChild(img);
+      } else {
+        btn.style.background = c.swatch;
+      }
       btn.addEventListener("click", () => {
         state.settings.catCharacterId = c.id;
         saveSettings(state.settings);
