@@ -31,6 +31,14 @@ jobs:
         with:
           enablement: true
 
+      - name: Cache-bust local CSS/JS references
+        run: |
+          SHA_SHORT=$(echo "${{ github.sha }}" | cut -c1-8)
+          sed -i "s#css/style.css#css/style.css?v=${SHA_SHORT}#" index.html
+          sed -i "s#js/stats.js#js/stats.js?v=${SHA_SHORT}#" index.html
+          sed -i "s#js/chat.js#js/chat.js?v=${SHA_SHORT}#" index.html
+          sed -i "s#js/app.js#js/app.js?v=${SHA_SHORT}#" index.html
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
