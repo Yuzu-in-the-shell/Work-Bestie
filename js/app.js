@@ -16,6 +16,11 @@
 
   const BUILTIN_CATS = [
     { id: "loaf", src: "assets/cats/loaf-cat.gif" },
+    { id: "wave", src: "assets/cats/scuba-scuba-cat.gif" },
+    { id: "pudding", src: "assets/cats/maxwell-cat.gif" },
+    { id: "standing", src: "assets/cats/cat-meme-running.gif" },
+    { id: "banana", src: "assets/cats/banana-cat-cat-banana.gif" },
+    { id: "dance", src: "assets/cats/cat-excited.gif" },
   ];
 
   const MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
