@@ -15,10 +15,8 @@
   };
 
   const BUILTIN_CATS = [
-    { id: "loaf", name: "🐱 包子", src: "assets/cats/loaf-cat.gif" },
+    { id: "loaf", src: "assets/cats/loaf-cat.gif" },
   ];
-
-  const UPLOAD_OPTION_VALUE = "__upload__";
 
   const MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
 
@@ -89,13 +87,16 @@
 
   const catStage = $("catStage");
   const catImg = $("catImg");
-  const catSelect = $("catSelect");
+  const catPicker = $("catPicker");
+  const catPickerTrigger = $("catPickerTrigger");
+  const catPickerThumb = $("catPickerThumb");
+  const catPickerMenu = $("catPickerMenu");
   const catUploadInput = $("catUploadInput");
 
   // ---------- Cat ----------
   function findCharacter(id) {
     if (id === "custom" && state.settings.customCatImage) {
-      return { id: "custom", name: "🖼️ 我的自定义图片", src: state.settings.customCatImage };
+      return { id: "custom", src: state.settings.customCatImage };
     }
     return BUILTIN_CATS.find((c) => c.id === id) || BUILTIN_CATS[0];
   }
@@ -104,39 +105,63 @@
     const char = findCharacter(state.settings.catCharacterId);
     state.settings.catCharacterId = char.id;
     catImg.src = char.src;
+    catPickerThumb.src = char.src;
   }
 
-  function renderCatSelect() {
-    catSelect.innerHTML = "";
-    for (const c of BUILTIN_CATS) {
-      const opt = document.createElement("option");
-      opt.value = c.id;
-      opt.textContent = c.name;
-      catSelect.appendChild(opt);
-    }
+  function closeCatPicker() {
+    catPickerMenu.hidden = true;
+    catPickerTrigger.setAttribute("aria-expanded", "false");
+  }
+
+  function renderCatPicker() {
+    catPickerMenu.innerHTML = "";
+
+    const options = [...BUILTIN_CATS];
     if (state.settings.customCatImage) {
-      const opt = document.createElement("option");
-      opt.value = "custom";
-      opt.textContent = "🖼️ 我的自定义图片";
-      catSelect.appendChild(opt);
+      options.push({ id: "custom", src: state.settings.customCatImage });
     }
-    const uploadOpt = document.createElement("option");
-    uploadOpt.value = UPLOAD_OPTION_VALUE;
-    uploadOpt.textContent = "📷 上传新图片…";
-    catSelect.appendChild(uploadOpt);
 
-    catSelect.value = state.settings.catCharacterId;
+    for (const c of options) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "cat-picker-option" + (state.settings.catCharacterId === c.id ? " active" : "");
+      btn.setAttribute("role", "option");
+      const img = document.createElement("img");
+      img.src = c.src;
+      img.alt = "";
+      btn.appendChild(img);
+      btn.addEventListener("click", () => {
+        state.settings.catCharacterId = c.id;
+        saveSettings(state.settings);
+        applyCatCharacter();
+        renderCatPicker();
+        closeCatPicker();
+      });
+      catPickerMenu.appendChild(btn);
+    }
+
+    const uploadBtn = document.createElement("button");
+    uploadBtn.type = "button";
+    uploadBtn.className = "cat-picker-option upload";
+    uploadBtn.title = "上传我喜欢的猫咪图片/GIF";
+    uploadBtn.textContent = "📷";
+    uploadBtn.addEventListener("click", () => {
+      closeCatPicker();
+      catUploadInput.click();
+    });
+    catPickerMenu.appendChild(uploadBtn);
+
+    catPickerThumb.src = findCharacter(state.settings.catCharacterId).src;
   }
 
-  catSelect.addEventListener("change", () => {
-    if (catSelect.value === UPLOAD_OPTION_VALUE) {
-      catSelect.value = state.settings.catCharacterId;
-      catUploadInput.click();
-      return;
-    }
-    state.settings.catCharacterId = catSelect.value;
-    saveSettings(state.settings);
-    applyCatCharacter();
+  catPickerTrigger.addEventListener("click", () => {
+    const willOpen = catPickerMenu.hidden;
+    catPickerMenu.hidden = !willOpen;
+    catPickerTrigger.setAttribute("aria-expanded", String(willOpen));
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!catPicker.contains(e.target)) closeCatPicker();
   });
 
   catUploadInput.addEventListener("change", () => {
@@ -153,7 +178,7 @@
       state.settings.catCharacterId = "custom";
       saveSettings(state.settings);
       applyCatCharacter();
-      renderCatSelect();
+      renderCatPicker();
       say("新猫咪上线啦！喵～");
     };
     reader.readAsDataURL(file);
@@ -331,7 +356,7 @@
   // ---------- Init ----------
   applySettingsToView();
   applyCatCharacter();
-  renderCatSelect();
+  renderCatPicker();
   updateChatHint();
   renderHistory();
   tickStats();

@@ -26,7 +26,14 @@
           <img id="catImg" alt="猫咪" />
         </div>
         <div class="cat-name" id="catNameLabel">团子</div>
-        <select id="catSelect" class="pixel-input cat-select"></select>
+
+        <div class="cat-picker" id="catPicker">
+          <button type="button" class="cat-picker-trigger" id="catPickerTrigger" aria-haspopup="listbox" aria-expanded="false">
+            <img id="catPickerThumb" alt="切换猫咪" />
+            <span class="cat-picker-arrow">▾</span>
+          </button>
+          <div class="cat-picker-menu" id="catPickerMenu" role="listbox" hidden></div>
+        </div>
         <input type="file" id="catUploadInput" accept="image/*" hidden />
       </section>
 
