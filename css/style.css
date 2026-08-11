@@ -309,6 +309,24 @@ body {
 
 .money.pulse { transform: scale(1.06); }
 
+.money-compare {
+  margin-top: 6px;
+  height: 20px;
+  overflow: hidden;
+  font-size: 12px;
+  color: #8a7b6e;
+}
+
+.money-compare span {
+  display: block;
+  animation: compare-roll .45s ease;
+}
+
+@keyframes compare-roll {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
 .progress-track {
   width: 100%;
   height: 18px;

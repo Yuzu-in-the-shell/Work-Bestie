@@ -25,6 +25,54 @@
 
   const MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
 
+  /* "Today's earnings buys you N of these" — rough US price tags, only meant
+   * to make the number feel tangible, not to be accurate. Ordered roughly
+   * cheap -> expensive; the rotation picks whichever ones give a fun count. */
+  const PRICE_TAGS = [
+    { emoji: "🍬", verb: "买", name: "根猫条", price: 1 },
+    { emoji: "🍜", verb: "吃", name: "桶泡面", price: 1.2 },
+    { emoji: "🍎", verb: "买", name: "斤苹果", price: 2.5 },
+    { emoji: "🥤", verb: "喝", name: "罐可乐", price: 2.5 },
+    { emoji: "🐟", verb: "买", name: "个猫罐头", price: 2.5 },
+    { emoji: "🚇", verb: "坐", name: "次地铁", price: 2.9 },
+    { emoji: "🍩", verb: "吃", name: "个甜甜圈", price: 3 },
+    { emoji: "🌮", verb: "吃", name: "个 taco", price: 3.5 },
+    { emoji: "🌭", verb: "吃", name: "个热狗", price: 4 },
+    { emoji: "🍕", verb: "吃", name: "片披萨", price: 4 },
+    { emoji: "🧁", verb: "吃", name: "个纸杯蛋糕", price: 4 },
+    { emoji: "🥐", verb: "吃", name: "个可颂", price: 4.5 },
+    { emoji: "🥚", verb: "买", name: "打鸡蛋", price: 4.5 },
+    { emoji: "🍦", verb: "吃", name: "个冰淇淋", price: 5 },
+    { emoji: "🧦", verb: "买", name: "双袜子", price: 5 },
+    { emoji: "☕", verb: "喝", name: "杯咖啡", price: 5.5 },
+    { emoji: "🍰", verb: "吃", name: "块蛋糕", price: 6 },
+    { emoji: "🍺", verb: "喝", name: "杯啤酒", price: 6 },
+    { emoji: "🧋", verb: "喝", name: "杯奶茶", price: 6.5 },
+    { emoji: "🍔", verb: "吃", name: "个汉堡", price: 8 },
+    { emoji: "🧸", verb: "买", name: "个猫玩具", price: 8 },
+    { emoji: "🍣", verb: "吃", name: "份寿司", price: 9 },
+    { emoji: "🧴", verb: "买", name: "瓶洗发水", price: 9 },
+    { emoji: "🥗", verb: "吃", name: "份沙拉", price: 10 },
+    { emoji: "🍟", verb: "吃", name: "份麦当劳套餐", price: 11 },
+    { emoji: "🎵", verb: "听", name: "个月 Spotify", price: 12 },
+    { emoji: "🍗", verb: "吃", name: "份炸鸡", price: 12 },
+    { emoji: "🍱", verb: "吃", name: "份便当", price: 13 },
+    { emoji: "🎬", verb: "看", name: "场电影", price: 15 },
+    { emoji: "📺", verb: "看", name: "个月 Netflix", price: 15.5 },
+    { emoji: "🍕", verb: "吃", name: "整个披萨", price: 18 },
+    { emoji: "🚕", verb: "打", name: "次车", price: 18 },
+    { emoji: "📚", verb: "买", name: "本书", price: 18 },
+    { emoji: "💄", verb: "买", name: "支口红", price: 25 },
+    { emoji: "💇", verb: "理", name: "次发", price: 30 },
+    { emoji: "🍲", verb: "吃", name: "顿火锅", price: 35 },
+    { emoji: "🏋️", verb: "办", name: "个月健身卡", price: 40 },
+    { emoji: "🎮", verb: "买", name: "个 3A 游戏", price: 60 },
+    { emoji: "👟", verb: "买", name: "双球鞋", price: 90 },
+    { emoji: "🎧", verb: "买", name: "副 AirPods", price: 130 },
+    { emoji: "🐈", verb: "买", name: "个猫爬架", price: 150 },
+    { emoji: "✈️", verb: "买", name: "张机票", price: 250 },
+  ];
+
   function loadSettings() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -60,6 +108,7 @@
   // ---------- DOM refs ----------
   const $ = (id) => document.getElementById(id);
   const moneyValue = $("moneyValue");
+  const moneyCompare = $("moneyCompare");
   const dayFill = $("dayFill");
   const dayPercent = $("dayPercent");
   const dayTimeRange = $("dayTimeRange");
@@ -303,6 +352,54 @@
     return "$ " + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  /* Pick the tags whose count lands in a satisfying range for the current
+   * amount, so we don't show "0.02 个机票" or "3648 个泡面". */
+  function eligibleTags(earnings) {
+    if (earnings <= 0) return [];
+    const good = PRICE_TAGS.filter((t) => {
+      const n = earnings / t.price;
+      return n >= 1 && n < 1000;
+    });
+    return good.length ? good : PRICE_TAGS.slice(0, 4);
+  }
+
+  function formatCount(n) {
+    if (n >= 100) return String(Math.round(n));
+    if (n >= 10) return n.toFixed(0);
+    return n.toFixed(1).replace(/\.0$/, "");
+  }
+
+  let compareIndex = -1;
+  let compareTag = null;
+
+  function rotateCompare(stats) {
+    const tags = eligibleTags(stats.earnings);
+    if (tags.length === 0) {
+      compareTag = null;
+      moneyCompare.replaceChildren();
+      return;
+    }
+    compareIndex = (compareIndex + 1) % tags.length;
+    compareTag = tags[compareIndex];
+    renderCompare(stats, true);
+  }
+
+  /* animate=true swaps in a fresh node so the roll-up keyframes replay;
+   * the per-second refresh just rewrites the text in place. */
+  function renderCompare(stats, animate) {
+    if (!compareTag) return;
+    const n = stats.earnings / compareTag.price;
+    const text = `≈ 可以${compareTag.verb} ${formatCount(n)} ${compareTag.name} ${compareTag.emoji}`;
+    const existing = moneyCompare.firstElementChild;
+    if (existing && !animate) {
+      existing.textContent = text;
+      return;
+    }
+    const span = document.createElement("span");
+    span.textContent = text;
+    moneyCompare.replaceChildren(span);
+  }
+
   let lastMoneyInt = -1;
   function tickStats() {
     const stats = WorkStats.computeStats(state.settings);
@@ -314,6 +411,9 @@
       moneyValue.classList.add("pulse");
       setTimeout(() => moneyValue.classList.remove("pulse"), 180);
     }
+
+    if (!compareTag && stats.earnings > 0) rotateCompare(stats);
+    else renderCompare(stats, false);
 
     dayFill.style.width = stats.dayPercent.toFixed(1) + "%";
     dayPercent.textContent = stats.dayPercent.toFixed(0) + "%";
@@ -398,5 +498,6 @@
   renderHistory();
   tickStats();
   setInterval(tickStats, 1000);
+  setInterval(() => rotateCompare(WorkStats.computeStats(state.settings)), 4000);
   scheduleIdleLine();
 })();
