@@ -293,7 +293,7 @@
     clearTimeout(bubbleTimer);
     const delay = 25000 + Math.random() * 35000;
     bubbleTimer = setTimeout(() => {
-      say(CatChat.idleLine());
+      say(CatChat.idleLine(WorkStats.buildContext(state.settings)));
       scheduleIdleLine();
     }, delay);
   }
@@ -373,8 +373,11 @@
       apiKey: state.settings.apiKey,
       model: state.settings.model,
       catName: state.settings.catName,
-      history: state.history,
+      // history already has this turn's message appended; callOpenAI adds
+      // userText itself, so trim it here to avoid sending it twice.
+      history: state.history.slice(0, -1),
       userText: text,
+      ctx: WorkStats.buildContext(state.settings),
     });
 
     typingEl.remove();
