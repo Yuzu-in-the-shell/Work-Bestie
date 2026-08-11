@@ -170,28 +170,32 @@ body {
   object-fit: contain;
 }
 
+.cat-controls {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
 .cat-picker {
   position: relative;
-  margin-top: 12px;
 }
 
 .cat-picker-trigger {
   display: flex;
   align-items: center;
+  height: 100%;
   gap: 8px;
   padding: 5px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--ink);
   background: #fff;
   border: 3px solid var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
   cursor: pointer;
-}
-
-.cat-picker-trigger img {
-  width: 28px;
-  height: 28px;
-  object-fit: cover;
-  border: 2px solid var(--ink);
-  background: var(--cream-2);
 }
 
 .cat-picker-arrow {
@@ -202,7 +206,7 @@ body {
 .cat-picker-menu {
   position: absolute;
   top: calc(100% + 8px);
-  left: 0;
+  right: 0;
   z-index: 10;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -245,13 +249,30 @@ body {
 }
 
 .cat-name {
-  margin-top: 10px;
   font-family: "Press Start 2P", monospace;
   font-size: 11px;
+  color: var(--ink);
   background: var(--pink);
   border: 3px solid var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
   padding: 4px 10px;
+  cursor: pointer;
+}
+
+.cat-name:hover {
+  filter: brightness(1.05);
+}
+
+.cat-name-input {
+  font-family: "Press Start 2P", monospace;
+  font-size: 11px;
+  width: 120px;
+  color: var(--ink);
+  background: #fff;
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 4px 10px;
+  outline: none;
 }
 
 /* ---------- Stats card ---------- */

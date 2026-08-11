@@ -94,9 +94,9 @@
   const catImg = $("catImg");
   const catPicker = $("catPicker");
   const catPickerTrigger = $("catPickerTrigger");
-  const catPickerThumb = $("catPickerThumb");
   const catPickerMenu = $("catPickerMenu");
   const catUploadInput = $("catUploadInput");
+  const catNameInput = $("catNameInput");
 
   // ---------- Cat ----------
   function findCharacter(id) {
@@ -110,7 +110,6 @@
     const char = findCharacter(state.settings.catCharacterId);
     state.settings.catCharacterId = char.id;
     catImg.src = char.src;
-    catPickerThumb.src = char.src;
   }
 
   function closeCatPicker() {
@@ -155,8 +154,6 @@
       catUploadInput.click();
     });
     catPickerMenu.appendChild(uploadBtn);
-
-    catPickerThumb.src = findCharacter(state.settings.catCharacterId).src;
   }
 
   catPickerTrigger.addEventListener("click", () => {
@@ -187,6 +184,37 @@
       say("新猫咪上线啦！喵～");
     };
     reader.readAsDataURL(file);
+  });
+
+  // ---------- Inline rename ----------
+  function startRename() {
+    catNameInput.value = state.settings.catName;
+    catNameLabel.hidden = true;
+    catNameInput.hidden = false;
+    catNameInput.focus();
+    catNameInput.select();
+  }
+
+  function finishRename(commit) {
+    if (catNameInput.hidden) return;
+    if (commit) {
+      const name = catNameInput.value.trim();
+      if (name && name !== state.settings.catName) {
+        state.settings.catName = name;
+        saveSettings(state.settings);
+        applySettingsToView();
+        say(`好耶，我以后就叫${name}啦！`);
+      }
+    }
+    catNameInput.hidden = true;
+    catNameLabel.hidden = false;
+  }
+
+  catNameLabel.addEventListener("click", startRename);
+  catNameInput.addEventListener("blur", () => finishRename(true));
+  catNameInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") finishRename(true);
+    if (e.key === "Escape") finishRename(false);
   });
 
   catStage.addEventListener("click", () => {
@@ -231,6 +259,7 @@
   saveSettingsBtn.addEventListener("click", () => {
     const salary = Number(inputSalary.value);
     state.settings = {
+      ...state.settings,
       catName: inputCatName.value.trim() || DEFAULT_SETTINGS.catName,
       salary: Number.isFinite(salary) && salary >= 0 ? salary : DEFAULT_SETTINGS.salary,
       start: inputStart.value || DEFAULT_SETTINGS.start,
