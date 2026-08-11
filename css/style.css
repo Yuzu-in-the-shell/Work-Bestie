@@ -215,6 +215,10 @@ body {
   max-width: 220px;
 }
 
+.cat-picker-menu[hidden] {
+  display: none;
+}
+
 .cat-picker-option {
   width: 44px;
   height: 44px;
