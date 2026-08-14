@@ -65,6 +65,24 @@
     ],
   };
 
+  /* Reactions to being poked/petted, mixed into the bubble on cat clicks. */
+  const POKE_LINES = [
+    "喵！被你戳到了～",
+    "呼噜呼噜…再摸摸嘛。",
+    "干嘛呀，人家在认真上班呢（并没有）",
+    "喵呜～痒痒的！",
+    "戳一下我就跳一下，好玩吧？",
+    "别闹啦，专心工作！…好吧再戳一下也行。",
+    "尾巴甩甩，表示很开心～",
+    "喵？有什么事吗？还是只想摸我？",
+    "被摸到了，今天的能量补满啦！",
+    "嘿嘿，我最喜欢被戳了。",
+    "再戳我就要翻肚皮了哦～",
+    "喵喵喵！（快乐地转圈）",
+    "手感不错吧？我可是每天都梳毛的。",
+    "工作累了就来撸我，随时营业～",
+  ];
+
   /* ---------- Keyword-matched replies ---------- */
   const CANNED = {
     tired: [
@@ -270,6 +288,14 @@
     return pick(pool);
   }
 
+  /* Mostly poke reactions, with the odd phase-appropriate line mixed in so
+   * repeated clicking still surfaces "还有 20 分钟下班" type comments. */
+  function pokeLine(ctx) {
+    const phase = (ctx && ctx.phase) || "midday";
+    const idle = IDLE_BY_PHASE[phase] || IDLE_BY_PHASE.midday;
+    return pick(Math.random() < 0.25 ? idle : POKE_LINES);
+  }
+
   function cannedReply(userText, ctx) {
     for (const [regex, answer] of DYNAMIC_MAP) {
       if (regex.test(userText)) return answer(ctx);
@@ -353,5 +379,5 @@
     }
   }
 
-  window.CatChat = { reply, idleLine, cannedReply };
+  window.CatChat = { reply, idleLine, pokeLine, cannedReply };
 })();

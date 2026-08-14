@@ -270,6 +270,9 @@
     catStage.classList.remove("bounce");
     void catStage.offsetWidth;
     catStage.classList.add("bounce");
+
+    say(CatChat.pokeLine(WorkStats.buildContext(state.settings)));
+    scheduleIdleLine(); // push the idle timer back so it doesn't cut this off
   });
   catStage.addEventListener("animationend", () => catStage.classList.remove("bounce"));
 
@@ -330,9 +333,13 @@
 
   // ---------- Speech bubble ----------
   let bubbleTimer = null;
+  let sayTimer = null;
   function say(text) {
+    // Rapid calls (spam-clicking the cat) would otherwise stack fade timers
+    // and make the bubble flicker, so only the latest one is kept.
+    clearTimeout(sayTimer);
     speechBubble.style.opacity = "0";
-    setTimeout(() => {
+    sayTimer = setTimeout(() => {
       speechText.textContent = text;
       speechBubble.style.opacity = "1";
     }, 150);
