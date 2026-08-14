@@ -272,7 +272,7 @@
     catStage.classList.add("bounce");
 
     say(CatChat.pokeLine(WorkStats.buildContext(state.settings)));
-    scheduleIdleLine(); // push the idle timer back so it doesn't cut this off
+    scheduleIdleLine({ soon: true });
   });
   catStage.addEventListener("animationend", () => catStage.classList.remove("bounce"));
 
@@ -345,9 +345,15 @@
     }, 150);
   }
 
-  function scheduleIdleLine() {
+  /* Idle chatter. Clicking the cat reschedules this so the auto-line doesn't
+   * immediately stomp on the poke reaction — but the resume delay is kept
+   * short, otherwise a few clicks buy a minute of silence and the cat reads
+   * as having gone quiet for good. */
+  function scheduleIdleLine({ soon = false } = {}) {
     clearTimeout(bubbleTimer);
-    const delay = 25000 + Math.random() * 35000;
+    const delay = soon
+      ? 10000 + Math.random() * 10000 // 10-20s after an interaction
+      : 18000 + Math.random() * 20000; // 18-38s when left alone
     bubbleTimer = setTimeout(() => {
       say(CatChat.idleLine(WorkStats.buildContext(state.settings)));
       scheduleIdleLine();
